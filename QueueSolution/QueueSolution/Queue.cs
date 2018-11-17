@@ -17,6 +17,7 @@ namespace QueueSolution
         private int head;
         private int tail;
         private int currentCapacity;
+        private int q_version;
 
         /// <summary>
         /// Current count of all elements.
@@ -30,7 +31,7 @@ namespace QueueSolution
         {
             currentCapacity = DEFAULT_CAPACITY;
             arrayQueue = new T[currentCapacity];
-            Count = 0;
+            Count = q_version = 0;
         }
 
         /// <summary>
@@ -46,7 +47,7 @@ namespace QueueSolution
 
             currentCapacity = capacity;
             arrayQueue = new T[currentCapacity];
-            Count = 0;
+            Count = q_version = 0;
         }
 
         /// <summary>
@@ -61,6 +62,7 @@ namespace QueueSolution
 
             head = tail = Count = 0;
             Array.Clear(arrayQueue, 0, arrayQueue.Length);
+            q_version++;
         }
 
         /// <summary>
@@ -101,6 +103,7 @@ namespace QueueSolution
             arrayQueue[head] = default;
             head = (head + 1) % Count;
             Count--;
+            q_version++;
 
             return value;
         }
@@ -140,6 +143,7 @@ namespace QueueSolution
             arrayQueue[tail] = value;
             tail = (tail + 1) % arrayQueue.Length;
             Count++;
+            q_version++;
         }
 
         private void Increase()
@@ -179,16 +183,18 @@ namespace QueueSolution
             private readonly Queue<T> queue;
             private int index;
             private T current;
+            private int version;
 
             /// <summary>
             /// Constructor which takes passed link.
             /// </summary>
             /// <param name="queue">Passed link.</param>
-            public QueueEnumerator(Queue<T> queue)
+            internal QueueEnumerator(Queue<T> queue)
             {
                 this.queue = queue;
                 index = -1;
                 current = default;
+                version = queue.q_version;
             }
 
             /// <summary>
@@ -230,6 +236,11 @@ namespace QueueSolution
             /// <returns>Result of the moving.</returns>
             public bool MoveNext()
             {
+                if(version != queue.q_version)
+                {
+                    throw new InvalidOperationException($"{nameof(version)} was not correct.");
+                }
+
                 if (index == -1)
                 {
                     return false;
@@ -253,7 +264,15 @@ namespace QueueSolution
             /// <summary>
             /// Resets index of the iterator.
             /// </summary>
-            public void Reset() => index = -1;
+            public void Reset()
+            {
+                if (version != queue.q_version)
+                {
+                    throw new InvalidOperationException($"{nameof(version)} was not correct.");
+                }
+
+                index = -1;
+            } 
         }
     }
 }

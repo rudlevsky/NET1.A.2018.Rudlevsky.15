@@ -1,13 +1,24 @@
 ﻿using System;
-using System.Collections.Generic;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NUnit.Framework;
-using QueueSolution;
+using Assert = NUnit.Framework.Assert;
 
 namespace QueueSolutionTests
 {
     [TestFixture]
     public class QueueTests
     {
+        [ExpectedException(typeof(InvalidOperationException))]
+        public void Queue_UncorrectVersion_InvalidOperationException()
+        {
+            var queue = new QueueSolution.Queue<int>() { 1, 2, 3 };
+
+            foreach (var item in queue)
+            {
+                queue.Add(5);
+            }
+        }
+
         [Test]
         public void Queue_DequeueEmpty_InvalidOperationException()
         {
